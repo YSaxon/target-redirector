@@ -82,9 +82,9 @@ This project is still under development.
 - [x] Flexible HTTP/HTTPS options
 - [x] Allow redirecting of any host/port
 - [x] Allow destination host or port to remain unchanged
-- [ ] Comment/highlight redirected requests 
+- [x] Save settings
+- [ ] Comment/highlight redirected requests
 - [ ] Multiple search terms/redirections
-- [ ] Save settings
 - [ ] Session handling actions / Burp tool scope
 - [ ] History, monitoring, logging
 
