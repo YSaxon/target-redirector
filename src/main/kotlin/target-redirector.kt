@@ -423,6 +423,22 @@ class Redirector(val id: Int, val view: UI, var host_header: Any?, var original:
 
 class UI() : ITab {
 
+    companion object {
+        const val SETTING_ACTIVE = "redirect_active"
+        const val SETTING_ORIGINAL_HOST = "original_host"
+        const val SETTING_ORIGINAL_PORT = "original_port"
+        const val SETTING_ORIGINAL_PROTOCOL = "original_protocol"
+        const val SETTING_ORIGINAL_HOST_MODE = "original_host_mode"
+        const val SETTING_ORIGINAL_PORT_MODE = "original_port_mode"
+        const val SETTING_REPLACEMENT_HOST = "replacement_host"
+        const val SETTING_REPLACEMENT_PORT = "replacement_port"
+        const val SETTING_REPLACEMENT_PROTOCOL = "replacement_protocol"
+        const val SETTING_REPLACEMENT_HOST_MODE = "replacement_host_mode"
+        const val SETTING_REPLACEMENT_PORT_MODE = "replacement_port_mode"
+        const val SETTING_HOST_HEADER_MODE = "host_header_mode"
+        const val SETTING_HOST_HEADER_VALUE = "host_header_value"
+    }
+
     override public fun getTabCaption() = "Target Redirector"
     override public fun getUiComponent() = mainpanel
 
@@ -579,6 +595,62 @@ class UI() : ITab {
 
     val redirect_button = JButton("Activate Redirection")
 
+    fun save_setting(name: String, value: String) {
+        BurpExtender.cb.saveExtensionSetting(name, value)
+    }
+
+    fun load_setting(name: String, default: String): String {
+        val value = BurpExtender.cb.loadExtensionSetting(name)
+        return if (value == null) default else value
+    }
+
+    fun load_setting_int(name: String, default: Int): Int {
+        return load_setting(name, default.toString()).toIntOrNull() ?: default
+    }
+
+    fun save_redirect_config(active: Boolean) {
+        save_setting(SETTING_ACTIVE, active.toString())
+        save_setting(SETTING_ORIGINAL_HOST, redirect_panel_original.text_host.text)
+        save_setting(SETTING_ORIGINAL_PORT, redirect_panel_original.text_port.text)
+        save_setting(SETTING_ORIGINAL_PROTOCOL, redirect_panel_original.dropdown_proto.selectedIndex.toString())
+        save_setting(SETTING_ORIGINAL_HOST_MODE, redirect_panel_original.dropdown_host.selectedIndex.toString())
+        save_setting(SETTING_ORIGINAL_PORT_MODE, redirect_panel_original.dropdown_port.selectedIndex.toString())
+        save_setting(SETTING_REPLACEMENT_HOST, redirect_panel_replacement.text_host.text)
+        save_setting(SETTING_REPLACEMENT_PORT, redirect_panel_replacement.text_port.text)
+        save_setting(SETTING_REPLACEMENT_PROTOCOL, redirect_panel_replacement.dropdown_proto.selectedIndex.toString())
+        save_setting(SETTING_REPLACEMENT_HOST_MODE, redirect_panel_replacement.dropdown_host.selectedIndex.toString())
+        save_setting(SETTING_REPLACEMENT_PORT_MODE, redirect_panel_replacement.dropdown_port.selectedIndex.toString())
+        save_setting(SETTING_HOST_HEADER_MODE, dropdown_hostheader.selectedIndex.toString())
+        save_setting(SETTING_HOST_HEADER_VALUE, text_hostheader.text)
+    }
+
+    fun restore_redirect_config() {
+        redirect_panel_original.text_host.text = load_setting(SETTING_ORIGINAL_HOST, "")
+        redirect_panel_original.text_port.text = load_setting(SETTING_ORIGINAL_PORT, "")
+        redirect_panel_original.dropdown_proto.selectedIndex = load_setting_int(SETTING_ORIGINAL_PROTOCOL, Redirector.PROTO_BOTH_IGNORE)
+        redirect_panel_original.dropdown_host.selectedIndex = load_setting_int(SETTING_ORIGINAL_HOST_MODE, Redirector.HOST_PORT_SPECIFIED)
+        redirect_panel_original.dropdown_port.selectedIndex = load_setting_int(SETTING_ORIGINAL_PORT_MODE, Redirector.HOST_PORT_SPECIFIED)
+
+        redirect_panel_replacement.text_host.text = load_setting(SETTING_REPLACEMENT_HOST, "")
+        redirect_panel_replacement.text_port.text = load_setting(SETTING_REPLACEMENT_PORT, "")
+        redirect_panel_replacement.dropdown_proto.selectedIndex = load_setting_int(SETTING_REPLACEMENT_PROTOCOL, Redirector.PROTO_BOTH_IGNORE)
+        redirect_panel_replacement.dropdown_host.selectedIndex = load_setting_int(SETTING_REPLACEMENT_HOST_MODE, Redirector.HOST_PORT_SPECIFIED)
+        redirect_panel_replacement.dropdown_port.selectedIndex = load_setting_int(SETTING_REPLACEMENT_PORT_MODE, Redirector.HOST_PORT_SPECIFIED)
+
+        dropdown_hostheader.selectedIndex = load_setting_int(SETTING_HOST_HEADER_MODE, Redirector.HOST_HEADER_IGNORE)
+        text_hostheader.text = load_setting(SETTING_HOST_HEADER_VALUE, "")
+
+        redirect_panel_original.combo_click(redirect_panel_original.dropdown_host.selectedIndex, redirect_panel_original.text_host)
+        redirect_panel_original.combo_click(redirect_panel_original.dropdown_port.selectedIndex, redirect_panel_original.text_port)
+        redirect_panel_replacement.combo_click(redirect_panel_replacement.dropdown_host.selectedIndex, redirect_panel_replacement.text_host)
+        redirect_panel_replacement.combo_click(redirect_panel_replacement.dropdown_port.selectedIndex, redirect_panel_replacement.text_port)
+        dropdown_hostheader_click()
+
+        if (load_setting(SETTING_ACTIVE, "false") == "true") {
+            redirect_button_pressed()
+        }
+    }
+
     fun redirect_button_pressed() {
 
         val instance_id = Redirector.instance_add_or_remove(
@@ -591,6 +663,7 @@ class UI() : ITab {
         toggle_active( 
             if (instance_id > -1) true else false
         )
+        save_redirect_config(instance_id > -1)
     }
     
     fun popup_input(text: String, item: String?) = JOptionPane.showInputDialog(
@@ -693,6 +766,7 @@ class UI() : ITab {
         )
 
         BurpExtender.cb.customizeUiComponent(mainpanel)
+        restore_redirect_config()
     }
 
 }
