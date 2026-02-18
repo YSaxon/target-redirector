@@ -38,6 +38,16 @@ To build, use the following command which has been tested successfully on both W
 
 - `kotlinc -classpath burp-extender-api-1.7.22.jar src/main/kotlin/target-redirector.kt -include-runtime -d target-redirector.jar`
 
+### Quick build (copy/paste)
+
+If you want a single command that clones this branch into a temporary directory and outputs a compiled jar path:
+
+```bash
+tmpdir="$(mktemp -d)" && cd "$tmpdir" && git clone --branch <branch-name> --single-branch https://github.com/bao7uo/target-redirector.git && cd target-redirector && ./scripts/build-target-redirector.sh
+```
+
+If `kotlinc` is not installed, `scripts/build-target-redirector.sh` will download a local Kotlin compiler cache automatically and still produce `dist/target-redirector.jar`.
+
 The project can be built against a Kotlin version of the Burp API. See the following page from my other repo which has further details about the Burp API and Kotlin.
 
 - https://github.com/bao7uo/burp-extender-api-kotlin/blob/master/README.md
